@@ -1,534 +1,453 @@
+And now I begin my coding Kata!
+
+var myStack = [];
+
+//push
+myStack.push(1);
+myStack.push(2);
+myStack.push(3);
+
+//pop
+myStack.pop(); //3
+myStack.pop(); //2
+myStack.pop(); //1
 
 
+var myQueue = [];
 
-struct group_info init_groups = { .usage = ATOMIC_INIT(2) };
+//push
+myQueue.push(1);
+myQueue.push(2);
+myQueue.push(3);
 
-struct group_info *groups_alloc(int gidsetsize){
+//pop
+myQueue.shift(); //1
+myQueue.shift(); //2
+myQueue.shift(); //3
+        
 
-	struct group_info *group_info;
-
-	int nblocks;
-
-	int i;
-
-
-
-	nblocks = (gidsetsize + NGROUPS_PER_BLOCK - 1) / NGROUPS_PER_BLOCK;
-
-	/* Make sure we always allocate at least one indirect block pointer */
-
-	nblocks = nblocks ? : 1;
-
-	group_info = kmalloc(sizeof(*group_info) + nblocks*sizeof(gid_t *), GFP_USER);
-
-	if (!group_info)
-
-		return NULL;
-
-	group_info->ngroups = gidsetsize;
-
-	group_info->nblocks = nblocks;
-
-	atomic_set(&group_info->usage, 1);
-
-
-
-	if (gidsetsize <= NGROUPS_SMALL)
-
-		group_info->blocks[0] = group_info->small_block;
-
-	else {
-
-		for (i = 0; i < nblocks; i++) {
-
-			gid_t *b;
-
-			b = (void *)__get_free_page(GFP_USER);
-
-			if (!b)
-
-				goto out_undo_partial_alloc;
-
-			group_info->blocks[i] = b;
-
-		}
-
-	}
-
-	return group_info;
-
-
-
-out_undo_partial_alloc:
-
-	while (--i >= 0) {
-
-		free_page((unsigned long)group_info->blocks[i]);
-
-	}
-
-	kfree(group_info);
-
-	return NULL;
-
+function LinkedList(){  
+  this.head = null;
 }
 
 
+LinkedList.prototype.push = function(val){
+    var node = {
+       value: val,
+       next: null
+    }
+    if(!this.head){
+      this.head = node;      
+    }
+    else{
+      current = this.head;
+      while(current.next){
+        current = current.next;
+      }
+      current.next = node;
+    }
+  }
+  
+var sll = new LinkedList();
 
-EXPORT_SYMBOL(groups_alloc);
+//push node
+sll.push(2);
+sll.push(3);
+sll.push(4);
+
+//check values by traversing LinkedList 
+sll.head; //Object {data: 2, next: Object}
+sll.head.next; //Object {data: 3, next: Object}
+sll.head.next.next; //Object {data: 4, next: null}
+
+var node = {
+  value: val,
+  next: null,
+  previous: null  
+}
+   
+function DoublyLinkedList(){
+   this.head = null;
+}
+
+DoublyLinkedList.prototype.push = function(val){
+   var head = this.head,
+       current = head,
+       previous = head;
+  if(!head){
+      this.head = {value: val, previous:null, next:null };
+  }
+  else{
+      while(current && current.next){
+         previous = current;
+         current = current.next;
+      }     
+     current.next = {value: val, previous:current, next:null}
+  }  
+}
+
+var dll = new DoublyLinkedList();
+dll.push(2);
+dll.push(3);
+dll.push(4);
+dll.push(5);
 
 
+LinkedList.prototype.remove = function(val){
+    var current = this.head;
+    //case-1
+    if(current.value == val){
+       this.head = current.next;     
+    }
+    else{
+      var previous = current;
+      
+      while(current.next){
+        //case-3
+        if(current.value == val){
+          previous.next = current.next;          
+          break;
+        }
+        previous = current;
+        current = current.next;
+      }
+      //case -2
+      if(current.value == val){
+        previous.next == null;
+      }
+    }
+  }  
+  
+sll.remove(3); 
+sll.remove(1); 
 
-void groups_free(struct group_info *group_info)
 
-{
+function reversesll(sll){
+  
+  if(!sll.head || !sll.head.next) return sll;
 
-	if (group_info->blocks[0] != group_info->small_block) {
-
-		int i;
-
-		for (i = 0; i < group_info->nblocks; i++)
-
-			free_page((unsigned long)group_info->blocks[i]);
-
-	}
-
-	kfree(group_info);
-
+  var nodes=[], 
+    current = sll.head;
+  //storing all the nodes in an array
+  while(current){
+    nodes.push(current);
+    current = current.next;
+  }
+    
+  var reversedLL = new LinkedList();
+  
+  reversedLL.head = nodes.pop();
+  current = reversedLL.head;
+  
+  var node = nodes.pop();  
+  //make sure to make next of the newly inserted node to be null
+  //other wise the last node of your SLL will retain its old next.
+  while(node){
+     node.next = null;
+     current.next = node;
+     
+     current = current.next;
+     node = nodes.pop();
+  }
+  return reversedLL;
 }
 
 
+//create the LL
+var sll = new LinkedList();
+sll.push(1);
+sll.push(2);
+sll.push(3);
+sll.push(4);
+sll.push(5);
 
-EXPORT_SYMBOL(groups_free);
-
-
-
-/* export the group_info to a user-space array */
-
-static int groups_to_user(gid_t __user *grouplist,
-
-			  const struct group_info *group_info)
-
-{
-
-	int i;
-
-	unsigned int count = group_info->ngroups;
+//test it
+reversesll(sll);
+//{head: {value:5, next:{value: 4, next: {value: 3, next: {value:2, next:{value:1, next: null}}}}}}
 
 
+function reverseDoublyLL(dll){
+   var head = dll.head,
+       current = dll.head,
+       tmp;
+   while(current){
+      tmp = current.next;
+      current.next = current.previous;
+      current.previous = tmp;
+      if(!tmp){
+         //set the last node as header
+         dll.head = current;
+      }
+      current = tmp;
+   }
+  return dll;
+}
 
-	for (i = 0; i < group_info->nblocks; i++) {
+function kthFromEnd(sll, k){
+   var node = sll.head,
+       i = 1,
+       kthNode;
+   //handle, 0 or negative value of k
+   if(k<=0) return;
 
-		unsigned int cp_count = min(NGROUPS_PER_BLOCK, count);
+    while(node){
+      if(i == k) kthNode = sll.head;
+      else if(i-k>0){
+       kthNode = kthNode.next;
+      }
+      i++;
 
-		unsigned int len = cp_count * sizeof(*grouplist);
+      node = node.next;
+    }
+   return kthNode;
+}
 
+//create the LL
+var sll = new LinkedList();
+sll.push(1);
+sll.push(2);
+sll.push(3);
+sll.push(4);
+sll.push(5);
 
+//test at least once
+kthFromEnd(sll, 1); //Object {value: 5, next: null}
+kthFromEnd(sll, 3); //Object {value: 3, next: Object}
 
-		if (copy_to_user(grouplist, group_info->blocks[i], len))
+function deleteKthFromEnd(sll, k){
+   var node = sll.head,
+       i = 1,
+       kthNode,
+       previous;
+   if(k<=0) return sll;
 
-			return -EFAULT;
+    while(node){
+      if(i == k) kthNode = sll.head;
+      else if(i-k>0){
+       previous = kthNode;
+       kthNode = kthNode.next;
+      }
+      i++;
 
-
-
-		grouplist += NGROUPS_PER_BLOCK;
-
-		count -= cp_count;
-
-	}
-
-	return 0;
-
+      node = node.next;
+    }
+    //kth node is the head
+    if(!previous)
+       sll.head = sll.head.next;
+    else{
+     previous.next = kthNode.next;
+   }
+   return sll;
 }
 
 
+//test at least once
+var sll = new LinkedList();
+sll.push(1);
+sll.push(2);
+sll.push(3);
+sll.push(4);
+sll.push(5);
 
-/* fill a group_info from a user-space array - it must be allocated already */
+deleteKthFromEnd(sll, 2);
+//{head: {value:1, next:{value: 2, next: {value: 3, next: {value:1, next:null}}}}}
 
-static int groups_from_user(struct group_info *group_info,
+function deleteNodeDLL(val){
+   var current = dll.head,
+       previous;
+   
+   //delete head
+   if(current.value == val){
+      dll.head = current.next;
+      //if there is only one node, then dll.head is null
+      if(dll.head) dll.head.previous = null;
+      return dll;
+   }
 
-    gid_t __user *grouplist)
+   while(current.next){
+      if(current.value == val){
+         previous.next = current.next;
+         current.next.previous = previous;
+         return dll;
+     }
+     previous = current;
+     current = current.next;
+   }
+   
+   //delete last node
+   if(current.value == val){
+     previous.next = null;
+   }
+   return dll;
+}
 
-{
+function detectLoop(sll){
+   var slowPointer = sll.head, 
+       fastPointer = sll.head;
 
-	int i;
+   while(slowPointer && fastPointer && fastPointer.next){
+     slowPointer = slowPointer.next;
+     fastPointer = fastPointer.next.next;
 
-	unsigned int count = group_info->ngroups;
+     if(slowPointer == fastPointer){
+        return true;
+     }
+   }
+   return false;
+}
+        
+
+//test at least once
+var sll = new LinkedList();
+sll.push(1);
+sll.push(2);
+sll.push(3);
+sll.push(4);
+sll.push(5);
+
+detectLoop(sll); //false
+
+//create a loop manually. point next of 5 to point 3
+sll.head.next.next.next.next.next = sll.head.next.next
+
+detectLoop(sll); //true
+        
+function findLoopStart(sll){
+    var slow = sll.head,
+        fast = sll.head;
+    while(slow && fast){
+       slow = slow.next;
+ 
+       //if hits null, then there is no loop
+       if(!fast.next){
+          return null;
+       }
+ 
+       fast = fast.next.next;
+       if(slow == fast){
+           slow = sll.head;
+           while(slow != fast){
+              slow = slow.next;
+              fast = fast.next;
+           }
+           return slow;
+       }
+   }
+}
+
+function getLength(sll){
+   var head = sll.head,
+       current = head,
+       pointer = head,
+       anotherPtr,
+       len = 0;
+    //use the previously written function
+    var loopStartNode = findLoopStart(sll);
+    if(!loopStartNode){
+       while(current){
+          current= current.next;
+          len++;
+       }
+       return len;
+    }
+    else{       
+       anotherPtr = loopStartNode;
+       while(pointer != anotherPtr){
+          len += 2;
+          pointer = pointer.next;
+          anotherPtr = anotherPtr.next;          
+       }
+       return len;
+    }
+}
+
+function rotateByKthNode(sll, k){
+   var prevHead = sll.head,
+       previous = sll.head, 
+       current = sll.head,
+       i = 1;
+   while(current.next){
+     if(i==k+1){
+       sll.head = current;
+       previous.next = null;
+     }
+     previous = current;
+     current = current.next;
+     i++;
+  }
+  current.next = prevHead;
+  return sll;
+}
+
+rotateByKthNode(sll,3);
+//{head: {value:4, next:{value: 5, next: {value: 1, next: {value:2, next:{value:3, next: null}}}}}}
 
 
+function pushSorted(sll, val){
+   var head = sll.head,
+       current = head,
+       previous;
+   //value lower than head value
+   if(val < sll.head.value){
+      sll.head = {value: val, next: head};
+      return sll;
+   }
 
-	for (i = 0; i < group_info->nblocks; i++) {
-
-		unsigned int cp_count = min(NGROUPS_PER_BLOCK, count);
-
-		unsigned int len = cp_count * sizeof(*grouplist);
-
-
-
-		if (copy_from_user(group_info->blocks[i], grouplist, len))
-
-			return -EFAULT;
-
-
-
-		grouplist += NGROUPS_PER_BLOCK;
-
-		count -= cp_count;
-
-	}
-
-	return 0;
-
+   while(current){
+      if(current.value > val){
+         previous.next = {value: val, next: current};
+         return sll;
+      }
+      previous = current;
+      current = current.next;
+   } 
+   //value higher than the last node value
+   previous.next = {value:val, next: null};
+   return sll;
 }
 
 
+var sll = new LinkedList();
+sll.push(5);
+sll.push(7);
+sll.push(10);
+sll.push(14);
 
-/* a simple Shell sort */
+pushSorted(sll, 9);
+//{head: {value: 5, next: {value: 7, next: {value: 9, next: {value: 10, next: {value: 14, next: null}}}}}}
 
-static void groups_sort(struct group_info *group_info)
-
-{
-
-	int base, max, stride;
-
-	int gidsetsize = group_info->ngroups;
-
-
-
-	for (stride = 1; stride < gidsetsize; stride = 3 * stride + 1)
-
-		; /* nothing */
-
-	stride /= 3;
-
-
-
-	while (stride) {
-
-		max = gidsetsize - stride;
-
-		for (base = 0; base < max; base++) {
-
-			int left = base;
-
-			int right = left + stride;
-
-			gid_t tmp = GROUP_AT(group_info, right);
-
-
-
-			while (left >= 0 && GROUP_AT(group_info, left) > tmp) {
-
-				GROUP_AT(group_info, right) =
-
-				    GROUP_AT(group_info, left);
-
-				right = left;
-
-				left -= stride;
-
-			}
-
-			GROUP_AT(group_info, right) = tmp;
-
-		}
-
-		stride /= 3;
-
-	}
-
+function CircularLinkedList(){  
+  this.head = null;
 }
 
 
+CircularLinkedList.prototype.push = function(val){
+   var head = this.head,
+       current = head,
+       node = {value: val, next: null, previous: null};
 
-/* a simple bsearch */
-
-int groups_search(const struct group_info *group_info, gid_t grp)
-
-{
-
-	unsigned int left, right;
-
-
-
-	if (!group_info)
-
-		return 0;
-
-
-
-	left = 0;
-
-	right = group_info->ngroups;
-
-	while (left < right) {
-
-		unsigned int mid = (left+right)/2;
-
-		if (grp > GROUP_AT(group_info, mid))
-
-			left = mid + 1;
-
-		else if (grp < GROUP_AT(group_info, mid))
-
-			right = mid;
-
-		else
-
-			return 1;
-
-	}
-
-	return 0;
-
+   if(!head){
+      node.next = node;
+      node.previous = node;
+      this.head = node;
+   }
+   else{
+      while(current.next != head){
+         current = current.next;
+      }
+      
+      node.next = head;
+      node.previous = current;
+   
+      head.previous = node;
+      current.next = node;
+   }   
 }
 
 
+var cll = new CircularLinkedList();
+cll.push(3);
+cll.push(4);
+cll.push(5);
 
-/**
 
- * set_groups - Change a group subscription in a set of credentials
-
- * @new: The newly prepared set of credentials to alter
-
- * @group_info: The group list to install
-
- *
-
- * Validate a group subscription and, if valid, insert it into a set
-
- * of credentials.
-
- */
-
-int set_groups(struct cred *new, struct group_info *group_info)
-
-{
-
-	put_group_info(new->group_info);
-
-	groups_sort(group_info);
-
-	get_group_info(group_info);
-
-	new->group_info = group_info;
-
-	return 0;
-
-}
-
-
-
-EXPORT_SYMBOL(set_groups);
-
-
-
-/**
-
- * set_current_groups - Change current's group subscription
-
- * @group_info: The group list to impose
-
- *
-
- * Validate a group subscription and, if valid, impose it upon current's task
-
- * security record.
-
- */
-
-int set_current_groups(struct group_info *group_info)
-
-{
-
-	struct cred *new;
-
-	int ret;
-
-
-
-	new = prepare_creds();
-
-	if (!new)
-
-		return -ENOMEM;
-
-
-
-	ret = set_groups(new, group_info);
-
-	if (ret < 0) {
-
-		abort_creds(new);
-
-		return ret;
-
-	}
-
-
-
-	return commit_creds(new);
-
-}
-
-
-
-EXPORT_SYMBOL(set_current_groups);
-
-
-
-SYSCALL_DEFINE2(getgroups, int, gidsetsize, gid_t __user *, grouplist)
-
-{
-
-	const struct cred *cred = current_cred();
-
-	int i;
-
-
-
-	if (gidsetsize < 0)
-
-		return -EINVAL;
-
-
-
-	/* no need to grab task_lock here; it cannot change */
-
-	i = cred->group_info->ngroups;
-
-	if (gidsetsize) {
-
-		if (i > gidsetsize) {
-
-			i = -EINVAL;
-
-			goto out;
-
-		}
-
-		if (groups_to_user(grouplist, cred->group_info)) {
-
-			i = -EFAULT;
-
-			goto out;
-
-		}
-
-	}
-
-out:
-
-	return i;
-
-}
-
-
-
-/*
-
- *	SMP: Our groups are copy-on-write. We can set them safely
-
- *	without another task interfering.
-
- */
-
-
-
-SYSCALL_DEFINE2(setgroups, int, gidsetsize, gid_t __user *, grouplist)
-
-{
-
-	struct group_info *group_info;
-
-	int retval;
-
-
-
-	if (!nsown_capable(CAP_SETGID))
-
-		return -EPERM;
-
-	if ((unsigned)gidsetsize > NGROUPS_MAX)
-
-		return -EINVAL;
-
-
-
-	group_info = groups_alloc(gidsetsize);
-
-	if (!group_info)
-
-		return -ENOMEM;
-
-	retval = groups_from_user(group_info, grouplist);
-
-	if (retval) {
-
-		put_group_info(group_info);
-
-		return retval;
-
-	}
-
-
-
-	retval = set_current_groups(group_info);
-
-	put_group_info(group_info);
-
-
-
-	return retval;
-
-}
-
-
-
-/*
-
- * Check whether we're fsgid/egid or in the supplemental group..
-
- */
-
-int in_group_p(gid_t grp)
-
-{
-
-	const struct cred *cred = current_cred();
-
-	int retval = 1;
-
-
-
-	if (grp != cred->fsgid)
-
-		retval = groups_search(cred->group_info, grp);
-
-	return retval;
-
-}
-
-
-
-EXPORT_SYMBOL(in_group_p);
-
-
-
-int in_egroup_p(gid_t grp)
-
-{
-
-	const struct cred *cred = current_cred();
-
-	int retval = 1;
-
-
-
-	if (grp != cred->egid)
-
-		retval = groups_search(cred->group_info, grp);
-
-	return retval;
-
-}
